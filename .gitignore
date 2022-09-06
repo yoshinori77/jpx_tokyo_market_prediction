@@ -1,6 +1,9 @@
 !.gitkeep
 Input/*
 Output/*
+.parquet
+poetry.lock
+.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

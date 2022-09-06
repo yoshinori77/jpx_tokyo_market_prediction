@@ -5,7 +5,7 @@ description = ""
 authors = ["yoshinori77 <yoshinoriyamashita123@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.7,<3.9"
 pandas = "^1.4.2"
 numpy = "^1.22.3"
 sklearn = "^0.0"
@@ -14,9 +14,15 @@ xgboost = "^1.5.2"
 minepy = "^1.2.6"
 tqdm = "^4.64.0"
 matplotlib = "^3.5.1"
+ta = "^0.10.1"
+ipdb = "^0.13.9"
+tensorflow = "^2.9.1"
+tensorflow-probability = "^0.16.0"
+keras-tuner = "^1.1.2"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0.0"
+pycodestyle = "^2.8.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -569,6 +569,75 @@ def unpivot(fin_df, val_date):
         unpivot_fin_df.to_parquet('../Output/unpivot_train_df.parquet')
 
 
+def simple_model(df, val_date):
+    def rolling_mean(df, target_col, period=5):
+        rolling_df = pd.DataFrame()
+        rolling_df[['level_1', f'{target_col}_sma_{period}']] = (
+            df.groupby('SecuritiesCode')[target_col]
+              .rolling(period).mean().reset_index()[['level_1', target_col]]
+        )
+        rolling_df = rolling_df.set_index(
+            'level_1').sort_values('level_1').reset_index(drop=True)
+
+        return pd.concat([df, rolling_df], axis=1)
+
+    def rolling_std(df, target_col, period=5):
+        rolling_df = pd.DataFrame()
+        rolling_df[['level_1', f'{target_col}_std_{period}']] = (
+            df.groupby('SecuritiesCode')[target_col]
+              .rolling(period).std().reset_index()[['level_1', target_col]]
+        )
+        rolling_df = rolling_df.set_index(
+            'level_1').sort_values('level_1').reset_index(drop=True)
+
+        return pd.concat([df, rolling_df], axis=1)
+
+    def simple_model(x, y):
+        if x > 0:
+            return y
+        else:
+            return -y
+
+    df["Section/Products"] = df["Section/Products"].astype('category').cat.codes
+    df["NewMarketSegment"] = df["NewMarketSegment"].astype('category').cat.codes
+    df["33SectorCode"] = df["33SectorCode"].astype('category').cat.codes
+    df["17SectorCode"] = df["17SectorCode"].astype('category').cat.codes
+    df["NewIndexSeriesSizeCode"] = df["NewIndexSeriesSizeCode"].astype('category').cat.codes
+    df["week"] = df["week"].astype('category').cat.codes
+    df["TypeOfDocument"] = df["TypeOfDocument"].astype('category').cat.codes
+
+    df = rolling_mean(df, 'AdjustedClose', 5)
+    df = rolling_mean(df, 'AdjustedClose', 10)
+    df = rolling_mean(df, 'AdjustedClose', 25)
+    df = rolling_mean(df, 'AdjustedClose', 30)
+    df = rolling_mean(df, 'AdjustedClose', 40)
+    df = rolling_mean(df, 'AdjustedClose', 60)
+    df = rolling_mean(df, 'AdjustedClose', 100)
+    df = rolling_std(df, 'AdjustedClose', 5)
+    df = rolling_std(df, 'AdjustedClose', 10)
+    df = rolling_std(df, 'AdjustedClose', 25)
+    df = rolling_std(df, 'AdjustedClose', 30)
+    df = rolling_std(df, 'AdjustedClose', 40)
+    df = rolling_std(df, 'AdjustedClose', 60)
+    df = rolling_std(df, 'AdjustedClose', 100)
+
+    df["ac_sma_5_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_5'].pct_change(1)
+    df["ac_sma_10_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_10'].pct_change(1)
+    df["ac_sma_25_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_25'].pct_change(1)
+    df["ac_sma_30_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_30'].pct_change(1)
+    df["ac_sma_40_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_40'].pct_change(1)
+    df["ac_sma_60_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_60'].pct_change(1)
+    df["ac_sma_100_pct_change"] = df.groupby('SecuritiesCode')['AdjustedClose_sma_100'].pct_change(1)
+
+    df["volume_pct_change"] = df.groupby('SecuritiesCode')['Volume'].pct_change(1)
+    df['volume_pct_change_ror_1'] = df["volume_pct_change"] * df['ror_1']
+
+    df['ror1_ror2'] = df['ror_1'] * df['ror_2']
+    df['ror1_ror3'] = df['ror_1'] * df['ror_3']
+    df['ror1_ror4'] = df['ror_1'] * df['ror_4']
+    df['ror1_ror5'] = df['ror_1'] * df['ror_5']
+
+
 def run(is_all=True):
     df, stock_list, val_date = load_stock(is_all)
     df = df.merge(stock_list, on='SecuritiesCode', how='left')
